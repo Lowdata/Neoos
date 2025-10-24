@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self';">
+    <title>Ayush Pahuja - Portfolio OS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0e0e0e;
+            --bg-secondary: #1a1a1a;
+            --text-primary: #00ff00;
+            --text-secondary: #33ff33;
+            --accent: #00ff00;
+            --border: #00ff00;
+            --shadow: rgba(0, 255, 0, 0.3);
+        }
+
+        body.theme-ubuntu {
+            --bg-primary: #2c001e;
+            --bg-secondary: #300a24;
+            --text-primary: #ffffff;
+            --text-secondary: #e95420;
+            --accent: #e95420;
+            --border: #e95420;
+            --shadow: rgba(233, 84, 32, 0.3);
+        }
+
+        body.theme-matrix {
+            --bg-primary: #000000;
+            --bg-secondary: #001a00;
+            --text-primary: #00ff00;
+            --text-secondary: #00cc00;
+            --accent: #00ff00;
+            --border: #00ff00;
+            --shadow: rgba(0, 255, 0, 0.5);
+        }
+
+        body.theme-retro {
+            --bg-primary: #000080;
+            --bg-secondary: #0000aa;
+            --text-primary: #ffff55;
+            --text-secondary: #ffffff;
+            --accent: #ffff55;
+            --border: #ffff55;
+            --shadow: rgba(255, 255, 85, 0.3);
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+            caret-color: transparent; /* Fix: hide stray caret outside input */
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: var(--bg-secondary);
+            padding: 8px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border);
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            font-weight: bold;
+            font-size: 16px;
+            color: var(--accent);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 5px;
+        }
+
+        .tab {
+            padding: 5px 15px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.3s;
+            user-select: none;
+        }
+
+        .tab:hover {
+            background: var(--border);
+            color: var(--bg-primary);
+        }
+
+        .tab.active {
+            background: var(--accent);
+            color: var(--bg-primary);
+            font-weight: bold;
+        }
+
+        .top-bar-right {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .theme-selector {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 5px 10px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+        }
+
+        .time {
+            font-size: 14px;
+        }
+
+        /* Terminal Mode */
+        .terminal-container {
+            display: none;
+            height: calc(100vh - 50px);
+            padding: 20px;
+            overflow-y: auto;
+            padding-bottom: 60px;
+        }
+
+        .terminal-container.active {
+            display: block;
+        }
+
+        .terminal-output {
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .terminal-line {
+            margin: 5px 0;
+            line-height: 1.5;
+        }
+
+        .prompt {
+            color: var(--text-secondary);
+        }
+
+        .command {
+            color: var(--accent);
+        }
+
+        .terminal-input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-primary);
+            padding: 15px 20px;
+            border-top: 2px solid var(--border);
+            display: none;
+        }
+
+        .terminal-input-container.active {
+            display: block;
+        }
+
+        .terminal-input-line {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .terminal-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            outline: none;
+            caret-color: var(--accent); /* Only input shows caret */
+        }
+
+        .ascii-art {
+            color: var(--accent);
+            font-size: 10px;
+            line-height: 1.2;
+        }
+
+        /* Desktop Mode */
+        .desktop-container {
+            display: none;
+            height: calc(100vh - 50px);
+            position: relative;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            overflow: hidden;
+        }
+
+        .desktop-container.active {
+            display: block;
+        }
+
+        .desktop-icons {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 100px);
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .icon {
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+            user-select: none;
+        }
+
+        .icon:hover {
+            transform: scale(1.1);
+        }
+
+        .icon-image {
+            width: 64px;
+            height: 64px;
+            background: var(--bg-secondary);
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            border: 2px solid var(--accent);
+            box-shadow: 0 4px 10px var(--shadow);
+            transition: all 0.3s;
+            filter: contrast(1.2) brightness(1.1);
+        }
+
+        .icon:hover .icon-image {
+            box-shadow: 0 6px 20px var(--shadow);
+        }
+
+        .icon-label {
+            font-size: 12px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        /* Window */
+        .window {
+            position: absolute;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            box-shadow: 0 8px 30px var(--shadow);
+            min-width: 400px;
+            max-width: 800px;
+            max-height: 80vh;
+            display: none;
+            z-index: 100;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 0.3s, transform 0.3s;
+            border-radius: 4px;
+        }
+
+        .window.active {
+            display: flex;
+            flex-direction: column;
+            animation: windowOpen 0.3s forwards;
+        }
+
+        .window.closing {
+            animation: windowClose 0.25s forwards;
+        }
+
+        @keyframes windowOpen {
+            from {
+                opacity: 0;
+                transform: scale(0.8) translate(-50%, -50%);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translate(-50%, -50%);
+            }
+        }
+
+        @keyframes windowClose {
+            from {
+                opacity: 1;
+                transform: scale(1) translate(-50%, -50%);
+            }
+            to {
+                opacity: 0;
+                transform: scale(0.8) translate(-50%, -50%);
+            }
+        }
+
+        .window-header {
+            background: var(--accent);
+            color: var(--bg-primary);
+            padding: 8px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+            font-weight: bold;
+            user-select: none;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .window-btn {
+            width: 20px;
+            height: 20px;
+            background: var(--bg-primary);
+            border: 1px solid var(--bg-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.2s;
+            color: var(--text-primary);
+        }
+
+        .window-btn:hover {
+            background: #ff0000;
+            border-color: #ff0000;
+            color: #fff;
+        }
+
+        .window-content {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+            line-height: 1.6;
+        }
+
+        .window-content h2 {
+            color: var(--accent);
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 5px;
+        }
+
+        .window-content h3 {
+            color: var(--text-secondary);
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+
+        .project-item, .experience-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: var(--bg-primary);
+            border-left: 3px solid var(--accent);
+        }
+
+        .skill-category {
+            margin-bottom: 15px;
+        }
+
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .skill-tag {
+            background: var(--accent);
+            color: var(--bg-primary);
+            padding: 5px 10px;
+            font-size: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .contact-links {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .contact-link {
+            color: var(--accent);
+            text-decoration: none;
+            padding: 10px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+            display: block;
+        }
+
+        .contact-link:hover {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .hobby-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .hobby-card {
+            background: var(--bg-primary);
+            padding: 15px;
+            border: 2px solid var(--border);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border: 1px solid var(--border);
+        }
+
+        .error {
+            color: #ff5555;
+        }
+
+        .success {
+            color: #55ff55;
+        }
+
+        .warning {
+            color: #ffff55;
+        }
+
+        /* Matrix overlay */
+        #matrixOverlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        #matrixOverlay.active {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body class="theme-matrix">
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <div class="logo">AyushOS v1.0</div>
+            <div class="tabs">
+                <div class="tab active" data-mode="terminal">Terminal</div>
+                <div class="tab" data-mode="desktop">Desktop</div>
+            </div>
+        </div>
+        <div class="top-bar-right">
+            <select class="theme-selector" id="themeSelector">
+                <option value="matrix">Matrix</option>
+                <option value="ubuntu">Ubuntu</option>
+                <option value="retro">Retro</option>
+            </select>
+            <div class="time" id="clock"></div>
+        </div>
+    </div>
+
+    <!-- Terminal Mode -->
+    <div class="terminal-container active" id="terminalMode">
+        <div class="terminal-output" id="terminalOutput">
+            <pre class="ascii-art">
+    ___                       __       ____        __          _     
+   /   | __  ____  ________ / /_     / __ \____ _/ /_  __  __(_)___ 
+  / /| |/ / / / / / / ___// __ \   / /_/ / __ `/ __ \/ / / / / __ \
+ / ___ / /_/ / /_/ (__  )/ / / /  / ____/ /_/ / / / / /_/ / / /_/ /
+/_/  |_\__, /\__,_/____//_/ /_/  /_/    \__,_/_/ /_/\__,_/_/\__/\__/
+      /____/                                                          
+            </pre>
+            <div class="terminal-line">AyushOS v1.0 - Interactive Portfolio Terminal</div>
+            <div class="terminal-line">Full Stack Developer | Data Analyst | Blockchain Enthusiast</div>
+            <div class="terminal-line">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
+            <div class="terminal-line"></div>
+        </div>
+    </div>
+
+    <div class="terminal-input-container active" id="terminalInputContainer">
+        <div class="terminal-input-line">
+            <span class="prompt">visitor@ayush-portfolio:~$</span>
+            <input type="text" class="terminal-input" id="terminalInput" autofocus autocomplete="off" spellcheck="false">
+        </div>
+    </div>
+
+    <!-- Desktop Mode -->
+    <div class="desktop-container" id="desktopMode">
+        <canvas id="matrixOverlay"></canvas>
+        <div class="desktop-icons">
+            <div class="icon" data-window="about">
+                <div class="icon-image">👨‍💻</div>
+                <div class="icon-label">About Me</div>
+            </div>
+            <div class="icon" data-window="experience">
+                <div class="icon-image">💼</div>
+                <div class="icon-label">Experience</div>
+            </div>
+            <div class="icon" data-window="projects">
+                <div class="icon-image">🚀</div>
+                <div class="icon-label">Projects</div>
+            </div>
+            <div class="icon" data-window="skills">
+                <div class="icon-image">🛠️</div>
+                <div class="icon-label">Skills</div>
+            </div>
+            <div class="icon" data-window="hobbies">
+                <div class="icon-image">🎯</div>
+                <div class="icon-label">Hobbies</div>
+            </div>
+            <div class="icon" data-window="contact">
+                <div class="icon-image">📧</div>
+                <div class="icon-label">Contact</div>
+            </div>
+        </div>
+
+        <!-- Windows -->
+        <div class="window" id="aboutWindow">
+            <div class="window-header">
+                <span>About Me</span>
+                <div class="window-controls">
+                    <div class="window-btn close-btn">×</div>
+                </div>
+            </div>
+            <div class="window-content">
+                <h2>Hey there! I'm Ayush 👋</h2>
+                <p>I'm a developer who loves turning caffeine into code and ideas into reality. With over 2 years of building cool stuff on the web, I've learned that the best applications are the ones that make people's lives easier (and maybe a bit more fun).</p>
+                
+                <h3>🎓 The Academic Chapter</h3>
+                <p>B.Tech in Electronics and Communication Engineering from NSUT East Campus, Delhi (2019-2023). Started with circuits and signals, ended up falling in love with web development and blockchain. Life's funny that way!</p>
+                
+                <h3>💡 What I Do Best</h3>
+                <p>I build full-stack applications that don't just work—they <em>perform</em>. Whether it's crafting responsive frontends that feel smooth as butter, architecting backends that scale effortlessly, or diving into blockchain to build the future of the web, I'm all in.</p>
+                
+                <p style="margin-top: 15px;">Some highlights from my journey:</p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>Built apps serving 50K+ users with 99.9% uptime (because downtime is not in my vocabulary)</li>
+                    <li>Shaved 35% off load times through relentless optimization</li>
+                    <li>Created real-time features that boosted engagement by 40%</li>
+                    <li>Contributed to open-source projects with 500+ GitHub stars</li>
+                    <li>Specialized in Shopify & WordPress—because e-commerce is eating the world</li>
+                </ul>
+
+                <h3>🚀 My Philosophy</h3>
+                <p><em>"Write code that works today and makes sense tomorrow. Test like you expect it to break. Deploy like you're confident it won't."</em></p>
+            </div>
+        </div>
+
+        <div class="window" id="experienceWindow">
+            <div class="window-header">
+                <span>Work Experience</span>
+                <div class="window-controls">
+                    <div class="window-btn close-btn">×</div>
+                </div>
+            </div>
+            <div class="window-content">
+                <h2>Where I've Made an Impact 💼</h2>
+                
+                <div class="experience-item">
+                    <h3>Full Stack Developer @ Iceshard Games</h3>
+                    <p><em>Nov 2024 - Sep 2025 | Remote</em></p>
+                    <p style="margin-top: 10px;">Leading development on web applications that bring gaming experiences to life. Here's what keeps me busy:</p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>Architecting React & Node.js apps that handle 50K+ weekly players without breaking a sweat</li>
+                        <li>Building RESTful APIs that talk to MongoDB and PostgreSQL like they're best friends</li>
+                        <li>Implementing WebSocket magic for real-time multiplayer features (40% boost in user engagement!)</li>
+                        <li>Obsessing over performance—code splitting, lazy loading, query optimization, you name it</li>
+                        <li>Collaborating in true Agile fashion with Git, JIRA, and a lot of coffee</li>
+                    </ul>
+                </div>
+
+                <div class="experience-item">
+                    <h3>Full Stack Developer @ OneRare</h3>
+                    <p><em>Jan 2023 - Jun 2024 | Remote</em></p>
+                    <p style="margin-top: 10px;">Dove deep into the Web3 rabbit hole and came out building blockchain-integrated applications:</p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>Developed dApps with React, Web3.js, and Ethereum smart contracts</li>
+                        <li>Created admin dashboards with Next.js and TypeScript for monitoring the blockchain chaos</li>
+                        <li>Implemented rock-solid authentication with JWT and OAuth 2.0</li>
+                        <li>Optimized smart contracts to cut transaction times by 25% (gas fees matter!)</li>
+                        <li>Deployed to AWS EC2 and Vercel with CI/CD pipelines that make deployment feel like magic</li>
+                    </ul>
+                </div>
+
+                <h3 style="margin-top: 25px;">🛒 E-Commerce Expertise</h3>
+                <p style="margin-top: 10px;"><strong>Shopify:</strong> From custom themes to complex app integrations, I help businesses sell better online. Performance, conversion optimization, and user experience are my priorities.</p>
+                <p style="margin-top: 10px;"><strong>WordPress:</strong> Custom plugins, theme wizardry, and turning WordPress into whatever you need it to be. Speed, security, and scalability included.</p>
+            </div>
+        </div>
+
+        <div class="window" id="projectsWindow">
+            <div class="window-header">
+                <span>Projects</span>
+                <div class="window-controls">
+                    <div class="window-btn close-btn">×</div>
+                </div>
+            </div>
+            <div class="window-content">
+                <h2>Things I've Built 🚀</h2>
+
+                <div class="project-item">
+                    <h3>WhatsApp Chat Analytics Platform</h3>
+                    <p><em>React • Node.js • Express • MongoDB • Chart.js</em></p>
+                    <p style="margin-top: 10px;">Ever wondered what your chat history says about you? This full-stack beast processes over 1 million messages to give you insights you never knew you needed. Real-time analytics, beautiful visualizations, and database optimization that made queries 60% faster. Because data should be fast AND pretty.</p>
+                </div>
+
+                <div class="project-item">
+                    <h3>Customer Management System</h3>
+                    <p><em>React • Node.js • MongoDB • JWT • Stripe API</em></p>
+                    <p style="margin-top: 10px;">A CRM that actually makes sense. Manages 500+ customers and 2K+ transactions with role-based access control, secure JWT authentication, Stripe payment integration, and automated invoice generation. Search, filter, paginate—all optimized to feel instant.</p>
+                </div>
+
+                <div class="project-item">
+                    <h3>Crypto Wallet Application</h3>
+                    <p><em>React Native • Node.js • Firebase • Web3.js</em></p>
+                    <p style="margin-top: 10px;">Your keys, your crypto. Built a cross-platform mobile wallet supporting Ethereum and Polygon, complete with real-time price tracking, push notifications, and WebSocket connections. Deployed on GCP with Docker because containers make everything better. Serving 5K+ monthly users who trust us with their digital assets.</p>
+                </div>
+
+                <div class="project-item">
+                    <h3>Catoff Protocol (Open Source)</h3>
+                    <p><em>Node.js • Express • React.js • D3.js • Smart Contracts</em></p>
+                    <p style="margin-top: 10px;">Bridging Web2 and Web3 by integrating YouTube APIs with blockchain smart contracts. Built decentralized verification systems and analytics dashboards that actually make sense of on-chain data. Contributed 10+ PRs to help creators launch real-life challenges in the metaverse.</p>
+                </div>
+
+                <p style="margin-top: 20px; color: var(--text-secondary);">
+                    🔗 Explore more on my <a href="https://github.com/Lowdata" target="_blank" rel="noopener noreferrer" style="color: var(--accent);">GitHub</a> — where the code lives and breathes.
+                </p>
+            </div>
+        </div>
+
+        <div class="window" id="skillsWindow">
+            <div class="window-header">
+                <span>Technical Skills</span>
+                <div class="window-controls">
+                    <div class="window-btn close-btn">×</div>
+                </div>
+            </div>
+            <div class="window-content">
+                <h2>My Technical Arsenal ⚡</h2>
+
+                <div class="skill-category">
+                    <h3>Frontend Wizardry</h3>
+                    <div class="skill-tags">
+                        <span class="skill-tag">React.js</span>
+                        <span class="skill-tag">Next.js</span>
+                        <span class="skill-tag">Vue.js</span>
+                        <span class="skill-tag">TypeScript</span>
+                        <span class="skill-tag">JavaScript (ES6+)</span>
+                        <span class="skill-tag">HTML5</span>
+                        <span class="skill-tag">CSS3</span>
+                        <span class="skill-tag">Tailwind CSS</span>
+                        <span class="skill-tag">Bootstrap</span>
+                    </div>
+                </div>
+
+                <div class="skill-category">
+                    <h3>Backend Engineering</h3>
+                    <div class="skill-tags">
+                        <span class="skill-tag">Node.js</span>
+                        <span class="skill-tag">Express.js</span>
+                        <span class="skill-tag">Python</span>
+                        <span class="skill-tag">Django</span>
+                        <span class="skill-tag">Flask</span>
+                        <span class="skill-tag">Java</span>
+                        <span class="skill-tag">Spring Boot</span>
+                        <span class="skill-tag">RESTful APIs</span>
+                        <span class="skill-tag">GraphQL</span>
+                        <span class="skill-tag">Microservices</span>
+                    </div>
+                </div>
+
+                <div class="skill-category">
+                    <h3>Database Mastery</h3>
+                    <div class="skill-tags">
+                        <span class="skill-tag">MongoDB</span>
+                        <span class="skill-tag">PostgreSQL</span>
+                        <span class="skill-tag">MySQL</span>
+                        <span class="skill-tag">Redis</span>
+                        <span class="skill-tag">Firebase</span>
+                        <span class="skill-tag">DynamoDB</span>
+                    </div>
+                </div>
+
+                <div class="skill-category">
+                    <h3>Cloud & DevOps</h3>
+                    <div class="skill-tags">
+                        <span class="skill-tag">AWS (EC2, S3, Lambda)</span>
+                        <span class="skill-tag">Google Cloud Platform</span>
+                        <span class="skill-tag">Docker</span>
+                        <span class="skill-tag">Kubernetes</span>
+                        <span class="skill-tag">CI/CD</span>
+                        <span class="skill-tag">GitHub Actions</span>
+                    </div>
+                </div>
+
+                <div class="skill-category">
+                    <h3>Data Analytics</h3>
+                    <div class="skill-tags">
+                        <span class="skill-tag">Python (Pandas, NumPy)</span>
+                        <span class="skill-tag">SQL</span>
+                        <span class="skill-tag">Matplotlib</span>
+                        <span class="skill-tag">Tableau</span>
+                        <span class="skill-tag">Power BI</span>
+                        <span class="skill-tag">Excel</span>
+                    </div>
+                </div>
+
+                <div class="skill-category">
+                    <h3>Web3 & Blockchain</h3>
+                    <div class="skill-tags">
+                        <span class="skill-tag">Web3.js</span>
+                        <span class="skill-tag">Ethers.js</span>
+                        <span class="skill-tag">Smart Contracts</span>
+                        <span class="skill-tag">Ethereum</span>
+                        <span class="skill-tag">Polygon</span>
+                    </div>
+                </div>
+
+                <div class="skill-category">
+                    <h3>CMS & E-commerce</h3>
+                    <div class="skill-tags">
+                        <span class="skill-tag">Shopify</span>
+                        <span class="skill-tag">WordPress</span>
+                        <span class="skill-tag">Liquid</span>
+                        <span class="skill-tag">WooCommerce</span>
+                    </div>
+                </div>
+
+                <div class="skill-category">
+                    <h3>Developer Tools</h3>
+                    <div class="skill-tags">
+                        <span class="skill-tag">Git</span>
+                        <span class="skill-tag">JIRA</span>
+                        <span class="skill-tag">Postman</span>
+                        <span class="skill-tag">Jest</span>
+                        <span class="skill-tag">Socket.io</span>
+                        <span class="skill-tag">JWT</span>
+                        <span class="skill-tag">OAuth 2.0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="window" id="hobbiesWindow">
+            <div class="window-header">
+                <span>Hobbies & Interests</span>
+                <div class="window-controls">
+                    <div class="window-btn close-btn">×</div>
+                </div>
+            </div>
+            <div class="window-content">
+                <h2>Life Beyond the Terminal 🎯</h2>
+                <p>When I'm not debugging production issues or arguing about tabs vs. spaces, you'll find me:</p>
+
+                <div class="hobby-grid">
+                    <div class="hobby-card">
+                        <h3>🏋️ Lifting Heavy Things</h3>
+                        <p><strong>Gym Stats:</strong></p>
+                        <ul style="margin-left: 20px; margin-top: 10px;">
+                            <li>Training 5-6 days/week</li>
+                            <li>Strength & Hypertrophy focused</li>
+                            <li>Compound movements > everything</li>
+                            <li>Progressive overload is life</li>
+                        </ul>
+                        <p style="margin-top: 10px;"><em>"Code gets refactored, muscles get rebuilt. Both need consistency and patience."</em></p>
+                    </div>
+
+                    <div class="hobby-card">
+                        <h3>🎵 Making Beats</h3>
+                        <p><strong>Music Production:</strong></p>
+                        <ul style="margin-left: 20px; margin-top: 10px;">
+                            <li>Electronic & Lo-fi producer</li>
+                            <li>FL Studio / Ableton Live</li>
+                            <li>Synthesis & Sound Design nerd</li>
+                            <li>Best debugging happens with good music</li>
+                        </ul>
+                        <p style="margin-top: 10px;"><em>"Creating harmony from chaos—whether it's in code or in music."</em></p>
+                    </div>
+
+                    <div class="hobby-card">
+                        <h3>📚 Forever Learning</h3>
+                        <p>Currently exploring:</p>
+                        <ul style="margin-left: 20px; margin-top: 10px;">
+                            <li>Web3 & DeFi protocols</li>
+                            <li>AI/ML integration patterns</li>
+                            <li>Distributed systems design</li>
+                            <li>Performance engineering deep dives</li>
+                        </ul>
+                        <p style="margin-top: 10px;"><em>"The day you stop learning is the day you become obsolete."</em></p>
+                    </div>
+
+                    <div class="hobby-card">
+                        <h3>🎮 Gaming & Analysis</h3>
+                        <p>More than just playing:</p>
+                        <ul style="margin-left: 20px; margin-top: 10px;">
+                            <li>Strategy games & RPGs</li>
+                            <li>Game development enthusiast</li>
+                            <li>Analyzing player behavior</li>
+                            <li>Understanding game economics</li>
+                        </ul>
+                        <p style="margin-top: 10px;"><em>"Every game is a lesson in UX and engagement metrics."</em></p>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 20px;">💭 My Philosophy</h3>
+                <p style="margin-top: 10px; font-style: italic; padding: 15px; background: var(--bg-primary); border-left: 3px solid var(--accent);">
+                    "Whether I'm debugging a stubborn bug, perfecting my deadlift form, or layering synths in a track—it's all the same mindset. Focus on the fundamentals. Embrace the grind. Iterate relentlessly. And never stop pushing forward."
+                </p>
+            </div>
+        </div>
+
+        <div class="window" id="contactWindow">
+            <div class="window-header">
+                <span>Contact Me</span>
+                <div class="window-controls">
+                    <div class="window-btn close-btn">×</div>
+                </div>
+            </div>
+            <div class="window-content">
+                <h2>Let's Build Something Together 📧</h2>
+                <p>Got an idea? Need a developer? Just want to chat about tech, fitness, or music production? I'm always down for a good conversation.</p>
+
+                <div class="contact-links">
+                    <a href="mailto:ayush.pahuja090@gmail.com" class="contact-link">
+                        📧 ayush.pahuja090@gmail.com
+                    </a>
+                    <a href="tel:+918503022066" class="contact-link">
+                        📱 +91 8503022066
+                    </a>
+                    <a href="https://github.com/Lowdata" target="_blank" rel="noopener noreferrer" class="contact-link">
+                        💻 GitHub: @Lowdata
+                    </a>
+                    <a href="https://linkedin.com/in/ayush-pahuja-b4455b17b" target="_blank" rel="noopener noreferrer" class="contact-link">
+                        💼 LinkedIn: /in/ayush-pahuja-b4455b17b
+                    </a>
+                </div>
+
+                <h3 style="margin-top: 25px;">What I Can Help You With 🚀</h3>
+                <ul style="margin-left: 20px; margin-top: 10px; line-height: 2;">
+                    <li><strong>Full Stack Development</strong> - Web apps that scale and perform</li>
+                    <li><strong>Shopify Development</strong> - Custom stores that convert</li>
+                    <li><strong>WordPress Solutions</strong> - From blogs to enterprise sites</li>
+                    <li><strong>Blockchain Integration</strong> - Web3 apps and smart contracts</li>
+                    <li><strong>Data Analytics</strong> - Turn data into actionable insights</li>
+                    <li><strong>API Development</strong> - RESTful & GraphQL APIs</li>
+                    <li><strong>Mobile Apps</strong> - React Native cross-platform development</li>
+                    <li><strong>Technical Consulting</strong> - Architecture, optimization, scaling</li>
+                </ul>
+
+                <p style="margin-top: 20px; padding: 15px; background: var(--bg-primary); border-left: 3px solid var(--accent);">
+                    <strong>💡 Currently Available</strong><br>
+                    Open for freelance projects, contract work, and full-time opportunities. Let's turn your vision into reality!
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // File system simulation for Linux-like commands
+        const fileSystem = {
+            '/': ['home', 'usr', 'etc', 'var'],
+            '/home': ['visitor', 'ayush'],
+            '/home/visitor': ['README.txt', 'about.txt', 'projects.txt', 'skills.txt', 'contact.txt'],
+            '/home/ayush': ['portfolio', 'code', 'music', 'gym-stats.txt'],
+            '/usr': ['bin', 'local'],
+            '/etc': ['config'],
+            '/var': ['log']
+        };
+
+        const fileContents = {
+            'README.txt': 'Welcome to Ayush\'s Portfolio Terminal!\n\nNavigate through this system to learn more about me.\nUse "ls" to list files, "cat" to read them, and "help" for all commands.\n\nHappy exploring!',
+            'about.txt': 'Full Stack Developer | Data Analyst | Blockchain Enthusiast\n\nB.Tech in Electronics & Communication Engineering\nNSUT East Campus, New Delhi (2019-2023)\n\nBuilding scalable applications with 2+ years of experience.\n50K+ users served | 99.9% uptime | 35% faster load times',
+            'projects.txt': 'Major Projects:\n\n1. WhatsApp Chat Analytics Platform\n2. Customer Management System  \n3. Crypto Wallet Application\n4. Catoff Protocol (Open Source)\n\nTry "open projects" for detailed view!',
+            'skills.txt': 'Technical Skills:\n\nFrontend: React, Next.js, Vue.js, TypeScript\nBackend: Node.js, Express, Python, Java\nDatabase: MongoDB, PostgreSQL, MySQL, Redis\nCloud: AWS, GCP, Docker, Kubernetes\nWeb3: Ethereum, Polygon, Smart Contracts\nCMS: Shopify, WordPress\n\nType "skills" for complete arsenal!',
+            'contact.txt': 'Contact Information:\n\nEmail: ayush.pahuja090@gmail.com\nPhone: +91 8503022066\nGitHub: github.com/Lowdata\nLinkedIn: linkedin.com/in/ayush-pahuja-b4455b17b\n\nLet\'s build something amazing together!',
+            'gym-stats.txt': 'Training: 5-6 days/week | Strength & Hypertrophy\nFocus: Compound movements, progressive overload\nMotto: "Code gets refactored, muscles get rebuilt."\nBoth need consistency and patience.'
+        };
+
+        let currentPath = '/home/visitor';
+
+        // Terminal Commands Data
+        const commands = {
+            help: `<span style="color: var(--text-secondary)">Available Commands:</span>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<span style="color: var(--accent)">FILE SYSTEM (Linux-like)</span>
+  ls [dir]     - List directory contents
+  pwd          - Print working directory
+  cd [dir]     - Change directory (try cd /home/visitor)
+  cat [file]   - Display file contents
+  echo [text]  - Display a line of text
+  tree         - Display directory tree
+  man [cmd]    - Display command manual
+  
+<span style="color: var(--accent)">INFORMATION</span>
+  neofetch     - Display system information
+  about        - Who am I? Let's find out
+  whoami       - Quick identity check
+  experience   - My professional journey
+  projects     - Cool stuff I've built
+  skills       - Technical expertise breakdown
+  hobbies      - What I do for fun
+  
+<span style="color: var(--accent)">CONTACT & SOCIAL</span>
+  contact      - Get in touch with me
+  email        - Send me an email
+  github       - Check out my code
+  linkedin     - Professional profile
+  
+<span style="color: var(--accent)">SERVICES</span>
+  shopify      - Shopify development services
+  wordpress    - WordPress solutions
+  
+<span style="color: var(--accent)">FUN STUFF</span>
+  quote        - Random dev wisdom
+  joke         - Need a laugh?
+  ascii        - Cool ASCII art
+  matrix       - Enter the Matrix (toggle)
+  banner       - Display welcome banner
+  
+<span style="color: var(--accent)">SYSTEM</span>
+  date         - Current date and time
+  uptime       - System uptime
+  clear        - Clear the terminal
+  theme        - Change color theme (e.g., 'theme ubuntu')
+  desktop      - Switch to desktop mode
+  terminal     - Switch to terminal mode
+  open         - Open a window (e.g., 'open projects')
+  history      - View command history
+  sudo         - Try your luck (just kidding)
+  exit         - Close terminal (just refreshes)
+  
+<span style="color: var(--accent)">TIP:</span> Use arrow keys (↑/↓) to navigate command history
+<span style="color: var(--accent)">TIP:</span> Try "cd /home/visitor" then "ls" and "cat README.txt"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+
+            neofetch: `<pre style="color: var(--accent)">
+                   -\`                    visitor@ayush-portfolio
+                  .o+\`                   ━━━━━━━━━━━━━━━━━━━━━━
+                 \`ooo/                   <span style="color: var(--text-primary)">OS:</span> AyushOS v1.0
+                \`+oooo:                  <span style="color: var(--text-primary)">Host:</span> Portfolio Terminal
+               \`+oooooo:                 <span style="color: var(--text-primary)">Kernel:</span> Full Stack Developer
+               -+oooooo+:                <span style="color: var(--text-primary)">Uptime:</span> 2+ years in production
+             \`/:-:++oooo+:               <span style="color: var(--text-primary)">Packages:</span> React, Node, TypeScript, Python
+            \`/++++/+++++++:              <span style="color: var(--text-primary)">Shell:</span> bash + zsh + coffee
+           \`/++++++++++++++:             <span style="color: var(--text-primary)">Resolution:</span> 99.9% uptime
+          \`/+++ooooooooooooo/\`           <span style="color: var(--text-primary)">Theme:</span> Matrix [Ubuntu] [Retro]
+         ./ooosssso++osssssso+\`          <span style="color: var(--text-primary)">Icons:</span> Font Awesome + Emoji
+        .oossssso-\`\`\`\`/ossssss+\`         <span style="color: var(--text-primary)">Terminal:</span> AyushShell
+       -osssssso.      :ssssssso.        <span style="color: var(--text-primary)">CPU:</span> Caffeinated Developer
+      :osssssss/        osssso+++.       <span style="color: var(--text-primary)">GPU:</span> Problem Solving Unit
+     /ossssssss/        +ssssooo/-       <span style="color: var(--text-primary)">Memory:</span> Unlimited (with Stack Overflow)
+   \`/ossssso+/:-        -:/+osssso+-     <span style="color: var(--text-primary)">Disk:</span> GitHub repos & gists
+  \`+sso+:-\`                 \`.-/+oso:    <span style="color: var(--text-primary)">Projects:</span> 50K+ users served
+ \`++:.                           \`-/+/   <span style="color: var(--text-primary)">Deployment:</span> AWS, GCP, Vercel
+ .\`                                 \`/   <span style="color: var(--text-primary)">Status:</span> ✓ Online & Available
+</pre>`,
+
+            about: `<span style="color: var(--accent); font-weight: bold;">Hey there! I'm Ayush 👋</span>
+
+I'm a developer who loves turning caffeine into code and ideas into reality. 
+With 2+ years of experience building applications that actually scale, I've 
+learned that the best code is the kind you can read 6 months later without crying.
+
+<span style="color: var(--text-secondary)">🎓 Education</span>
+B.Tech in Electronics & Communication Engineering
+NSUT East Campus, New Delhi (2019-2023)
+
+<span style="color: var(--text-secondary)">💻 What I Do</span>
+• Build full-stack apps serving 50K+ users with 99.9% uptime
+• Create real-time features that boost engagement by 40%
+• Optimize performance—35% faster load times are my specialty
+• Integrate blockchain (Web3, smart contracts, the whole shebang)
+• Develop Shopify & WordPress solutions that convert
+
+<span style="color: var(--text-secondary)">🚀 Philosophy</span>
+"Write code that works today and makes sense tomorrow.
+ Test like you expect it to break. Deploy like it won't."
+
+<span style="color: var(--accent)">Type 'experience' to see where I've worked</span>
+<span style="color: var(--accent)">Type 'projects' to see what I've built</span>
+<span style="color: var(--accent)">Type 'skills' to see my tech stack</span>`,
+
+            whoami: `<span style="color: var(--accent)">Ayush Pahuja</span>
+Full Stack Developer | Data Analyst | Blockchain Enthusiast | Gym Rat | Beat Maker
+
+Location: Delhi, India 🇮🇳
+Status: Available for projects ✓
+Superpower: Turning complex problems into elegant solutions
+Weakness: Can't resist optimizing code (even when it's "good enough")
+
+<span style="color: var(--text-secondary)">Fun fact:</span> I debug with music and lift heavy things for clarity.
+`,
+
+            experience: `<span style="color: var(--accent); font-weight: bold;">Professional Journey 💼</span>
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<span style="color: var(--text-secondary)">[1] Iceshard Games - Full Stack Developer</span>
+    Nov 2024 - Sep 2025 | Remote
+    
+    Building gaming experiences that keep 50K+ weekly players coming back:
+    • Architected React & Node.js apps that handle peak loads effortlessly
+    • RESTful APIs powered by MongoDB & PostgreSQL
+    • Real-time multiplayer with WebSocket (40% engagement boost!)
+    • Performance obsession: code splitting, lazy loading, query optimization
+    • Agile development with Git, JIRA, and lots of communication
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<span style="color: var(--text-secondary)">[2] OneRare - Full Stack Developer</span>
+    Jan 2023 - Jun 2024 | Remote
+    
+    Dove into Web3 and blockchain development:
+    • Built dApps with React, Web3.js, and Ethereum smart contracts
+    • Admin dashboards with Next.js & TypeScript for blockchain metrics
+    • JWT & OAuth 2.0 authentication systems
+    • Smart contract optimization (25% faster transactions!)
+    • CI/CD pipelines on AWS EC2 and Vercel
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<span style="color: var(--text-secondary)">E-Commerce Expertise</span>
+🛒 Shopify: Custom themes, app integrations, conversion optimization
+📝 WordPress: Plugins, themes, performance tuning, security hardening
+
+<span style="color: var(--accent)">Want more details? Type 'projects' to see what I've built!</span>`,
+
+            projects: `<span style="color: var(--accent); font-weight: bold;">Things I've Built 🚀</span>
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<span style="color: var(--text-secondary)">[1] WhatsApp Chat Analytics Platform</span>
+    React • Node.js • Express • MongoDB • Chart.js
+    
+    Processes 1M+ messages to give you insights you never knew you needed.
+    Real-time analytics, beautiful visualizations, 60% faster queries.
+    Because data should be both fast AND pretty.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<span style="color: var(--text-secondary)">[2] Customer Management System</span>
+    React • Node.js • MongoDB • JWT • Stripe API
+    
+    CRM that actually makes sense. 500+ customers, 2K+ transactions,
+    role-based access, Stripe payments, automated invoicing.
+    Search, filter, paginate—all optimized to feel instant.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<span style="color: var(--text-secondary)">[3] Crypto Wallet Application</span>
+    React Native • Node.js • Firebase • Web3.js
+    
+    Your keys, your crypto. Cross-platform wallet supporting Ethereum
+    and Polygon. Real-time prices, push notifications, WebSocket magic.
+    5K+ monthly users trust us with their digital assets.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<span style="color: var(--text-secondary)">[4] Catoff Protocol (Open Source)</span>
+    Node.js • Express • React.js • D3.js • Smart Contracts
+    
+    Bridging Web2 and Web3. YouTube integration with blockchain,
+    decentralized verification, analytics dashboards.
+    10+ merged PRs with the global dev community.
+
+<span style="color: var(--accent)">🔗 See more: github.com/Lowdata</span>`,
+
+            skills: `<span style="color: var(--accent); font-weight: bold;">My Technical Arsenal ⚡</span>
+
+<span style="color: var(--text-secondary)">Frontend:</span> React, Next.js, Vue.js, TypeScript, JavaScript (ES6+)
+           HTML5, CSS3, Tailwind CSS, Bootstrap
+
+<span style="color: var(--text-secondary)">Backend:</span>  Node.js, Express, Python (Django, Flask), Java (Spring Boot)
+           RESTful APIs, GraphQL, Microservices
+
+<span style="color: var(--text-secondary)">Database:</span> MongoDB, PostgreSQL, MySQL, Redis, Firebase, DynamoDB
+
+<span style="color: var(--text-secondary)">Cloud:</span>    AWS (EC2, S3, Lambda), Google Cloud Platform
+           Docker, Kubernetes, CI/CD, GitHub Actions
+
+<span style="color: var(--text-secondary)">Analytics:</span> Python (Pandas, NumPy), SQL, Matplotlib
+            Tableau, Power BI, Excel, Google Data Studio
+
+<span style="color: var(--text-secondary)">Web3:</span>     Web3.js, Ethers.js, Smart Contracts
+           Ethereum, Polygon, Solidity
+
+<span style="color: var(--text-secondary)">CMS:</span>      Shopify (Liquid, theme dev), WordPress
+           WooCommerce, Custom Plugins
+
+<span style="color: var(--text-secondary)">Tools:</span>    Git, JIRA, Postman, Jest, Cypress, Webpack
+           Socket.io, JWT, OAuth 2.0
+
+<span style="color: var(--accent)">Basically, if it involves making things work on the internet, I can help.</span>`,
+
+            hobbies: `<span style="color: var(--accent); font-weight: bold;">Life Beyond the Terminal 🎯</span>
+
+<span style="color: var(--text-secondary)">🏋️ Lifting Heavy Things</span>
+   Training 5-6 days/week | Strength & Hypertrophy
+   Compound movements, progressive overload, discipline.
+
+<span style="color: var(--text-secondary)">🎵 Making Beats</span>
+   Electronic & Lo-fi | FL Studio / Ableton | Sound Design nerd.
+   The best debugging happens with great music.
+
+<span style="color: var(--text-secondary)">📚 Forever Learning</span>
+   Web3 & DeFi, AI/ML integrations, distributed systems, perf eng.
+
+<span style="color: var(--text-secondary)">🎮 Gaming & Analysis</span>
+   Strategy + RPGs | Player behavior | Game economy insights.
+
+<span style="color: var(--accent)">Mindset:</span> Focus on fundamentals. Embrace the grind. Iterate relentlessly.`,
+
+            contact: `<span style="color: var(--accent); font-weight: bold;">Let's Build Something Together 📧</span>
+Email: <a href="mailto:ayush.pahuja090@gmail.com" style="color: var(--accent)">ayush.pahuja090@gmail.com</a>
+Phone: <a href="tel:+918503022066" style="color: var(--accent)">+91 8503022066</a>
+GitHub: <a href="https://github.com/Lowdata" target="_blank" rel="noopener noreferrer" style="color: var(--accent)">github.com/Lowdata</a>
+LinkedIn: <a href="https://linkedin.com/in/ayush-pahuja-b4455b17b" target="_blank" rel="noopener noreferrer" style="color: var(--accent)">linkedin.com/in/ayush-pahuja-b4455b17b</a>`,
+
+            email: `Opening your default mail client...
+<a href="mailto:ayush.pahuja090@gmail.com" style="color: var(--accent)">ayush.pahuja090@gmail.com</a>`,
+
+            github: `GitHub: <a href="https://github.com/Lowdata" target="_blank" rel="noopener noreferrer" style="color: var(--accent)">github.com/Lowdata</a>`,
+            linkedin: `LinkedIn: <a href="https://linkedin.com/in/ayush-pahuja-b4455b17b" target="_blank" rel="noopener noreferrer" style="color: var(--accent)">linkedin.com/in/ayush-pahuja-b4455b17b</a>`,
+
+            shopify: `<span style="color: var(--accent); font-weight:bold;">Shopify Development Services</span>
+• Custom themes & storefronts focused on conversion
+• App integrations, checkout optimization, performance tuning
+• Headless Shopify with Next.js when needed
+• Analytics & A/B testing to improve LTV and AOV`,
+
+            wordpress: `<span style="color: var(--accent); font-weight:bold;">WordPress Solutions</span>
+• Custom plugins & theme development
+• WooCommerce stores optimized for speed & security
+• SEO, caching, CDN & Core Web Vitals improvements
+• Scalable infra on AWS/GCP + CI/CD`,
+
+            ascii: `<pre class="ascii-art">
+  _   _           _           _     
+ | | | | __ _  __| | ___  ___| |__  
+ | |_| |/ _\` |/ _\` |/ _ \/ __| '_ \ 
+ |  _  | (_| | (_| |  __/\__ \ | | |
+ |_| |_|\__,_|\__,_|\___||___/_| |_|
+</pre>`,
+
+            quote: () => {
+                const quotes = [
+                    "Simplicity is the soul of efficiency. — Austin Freeman",
+                    "First, solve the problem. Then, write the code. — John Johnson",
+                    "Programs must be written for people to read. — Harold Abelson",
+                    "Code is like humor. When you have to explain it, it’s bad. — Cory House",
+                    "Make it work, make it right, make it fast. — Kent Beck"
+                ];
+                return quotes[Math.floor(Math.random() * quotes.length)];
+            },
+
+            joke: () => {
+                const jokes = [
+                    "Why do programmers prefer dark mode? Because light attracts bugs.",
+                    "I would tell you a UDP joke, but you might not get it.",
+                    "There are only 10 kinds of people: those who understand binary and those who don't.",
+                    "A SQL query walks into a bar, walks up to two tables and asks: 'Can I join you?'",
+                    "To understand recursion, you must first understand recursion."
+                ];
+                return jokes[Math.floor(Math.random() * jokes.length)];
+            },
+
+            banner: `<pre class="ascii-art">
+    ___                       __       ____        __          _     
+   /   | __  ____  ________ / /_     / __ \____ _/ /_  __  __(_)___ 
+  / /| |/ / / / / / / ___// __ \   / /_/ / __ \`/ __ \/ / / / / __ \\
+ / ___ / /_/ / /_/ (__  )/ / / /  / ____/ /_/ / / / / /_/ / / /_/ /
+/_/  |_\\__, /\\__,_/____//_/ /_/  /_/    \\__,_/_/ /_/\\__,_/_/\\__/\\__/
+      /____/                                                          
+</pre>
+<div style="margin-top: 10px;">Welcome to AyushOS - Portfolio Terminal v1.0</div>
+<div>Full Stack Developer | Data Analyst | Blockchain Enthusiast</div>
+<div>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
+<div style="margin-top: 5px;">Type <span class="command">'help'</span> to see available commands</div>`
+        };
+
+        // App State
+        const state = {
+            history: [],
+            historyIndex: -1,
+            theme: localStorage.getItem('ayushos-theme') || 'matrix',
+            mode: 'terminal', // 'terminal' | 'desktop'
+            zTop: 200,
+            matrixRunning: false
+        };
+
+        // Elements
+        const terminalMode = document.getElementById('terminalMode');
+        const desktopMode = document.getElementById('desktopMode');
+        const terminalOutput = document.getElementById('terminalOutput');
+        const terminalInput = document.getElementById('terminalInput');
+        const terminalInputContainer = document.getElementById('terminalInputContainer');
+        const tabs = document.querySelectorAll('.tab');
+        const themeSelector = document.getElementById('themeSelector');
+        const clock = document.getElementById('clock');
+        const matrixCanvas = document.getElementById('matrixOverlay');
+        const ctx = matrixCanvas.getContext('2d');
+
+        // Init
+        function setTheme(theme) {
+            document.body.classList.remove('theme-ubuntu', 'theme-matrix', 'theme-retro');
+            document.body.classList.add(`theme-${theme}`);
+            themeSelector.value = theme;
+            localStorage.setItem('ayushos-theme', theme);
+        }
+
+        setTheme(state.theme);
+
+        function updateClock() {
+            const now = new Date();
+            clock.textContent = now.toLocaleString();
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        function setMode(mode) {
+            state.mode = mode;
+            tabs.forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
+            const isTerminal = mode === 'terminal';
+            terminalMode.classList.toggle('active', isTerminal);
+            terminalInputContainer.classList.toggle('active', isTerminal);
+            desktopMode.classList.toggle('active', !isTerminal);
+            if (isTerminal) {
+                focusInput();
+            }
+        }
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => setMode(tab.dataset.mode));
+        });
+
+        themeSelector.addEventListener('change', (e) => {
+            state.theme = e.target.value;
+            setTheme(e.target.value);
+        });
+
+        function focusInput() {
+            setTimeout(() => terminalInput.focus(), 0);
+        }
+
+        function scrollToBottom() {
+            // Auto "Pg Down" to latest output
+            terminalMode.scrollTop = terminalMode.scrollHeight;
+        }
+
+        function printLine(html = '') {
+            const div = document.createElement('div');
+            div.className = 'terminal-line';
+            div.innerHTML = html;
+            terminalOutput.appendChild(div);
+            scrollToBottom();
+        }
+
+        function printPromptWithCommand(cmd) {
+            const displayPath = currentPath === '/home/visitor' ? '~' : currentPath;
+            printLine(`<span class="prompt">visitor@ayush-portfolio:${displayPath}$</span> <span class="command">${escapeHtml(cmd)}</span>`);
+        }
+        
+        function updatePrompt() {
+            const promptSpan = document.querySelector('.terminal-input-line .prompt');
+            if (promptSpan) {
+                const displayPath = currentPath === '/home/visitor' ? '~' : currentPath;
+                promptSpan.textContent = `visitor@ayush-portfolio:${displayPath}$`;
+            }
+        }
+
+        function clearTerminal() {
+            terminalOutput.innerHTML = '';
+        }
+
+        function escapeHtml(str) {
+            if (typeof str !== 'string') return '';
+            return str.replace(/[&<>"'`=/]/g, (m) => ({
+                '&':'&amp;',
+                '<':'&lt;',
+                '>':'&gt;',
+                '"':'&quot;',
+                "'":"&#039;",
+                '`':'&#x60;',
+                '=':'&#x3D;',
+                '/':'&#x2F;'
+            }[m]));
+        }
+        
+        function sanitizeForDisplay(str) {
+            // Extra layer of security - strip any potential script tags or dangerous patterns
+            if (typeof str !== 'string') return '';
+            return escapeHtml(str.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ''));
+        }
+
+        // Helper functions for file system commands
+        function normalizePath(path) {
+            // Basic sanitization - remove multiple slashes and null bytes
+            path = path.replace(/\0/g, '').replace(/\/+/g, '/');
+            
+            if (path === '~') return '/home/visitor';
+            if (path.startsWith('~/')) return '/home/visitor/' + path.slice(2);
+            if (!path.startsWith('/')) {
+                // Relative path
+                return currentPath === '/' ? '/' + path : currentPath + '/' + path;
+            }
+            return path;
+        }
+        
+        function validatePath(path) {
+            // Additional validation to ensure path is within allowed filesystem
+            const allowedPaths = ['/', '/home', '/home/visitor', '/home/ayush', '/usr', '/usr/bin', '/usr/local', '/etc', '/etc/config', '/var', '/var/log'];
+            return allowedPaths.some(allowed => path === allowed || path.startsWith(allowed + '/'));
+        }
+
+        function getDirectoryContents(path) {
+            return fileSystem[path] || null;
+        }
+
+        function isDirectory(path) {
+            return fileSystem.hasOwnProperty(path);
+        }
+
+        function isFile(fileName, dirPath) {
+            const contents = getDirectoryContents(dirPath);
+            return contents && contents.includes(fileName);
+        }
+
+        function getFileContent(fileName) {
+            return fileContents[fileName] || null;
+        }
+
+        // Command Handlers
+        function handleCommand(inputRaw) {
+            const input = inputRaw.trim();
+            if (!input) { printLine(); return; }
+
+            state.history.push(input);
+            state.historyIndex = state.history.length;
+            printPromptWithCommand(input);
+
+            const [cmd, ...args] = input.split(/\s+/);
+            const argStr = args.join(' ').trim();
+            const argStrLower = argStr.toLowerCase();
+
+            switch (cmd.toLowerCase()) {
+                // File system commands
+                case 'ls':
+                    const lsPath = argStr ? normalizePath(argStr) : currentPath;
+                    const lsContents = getDirectoryContents(lsPath);
+                    if (lsContents) {
+                        const dirs = lsContents.filter(item => isDirectory(lsPath === '/' ? '/' + item : lsPath + '/' + item));
+                        const files = lsContents.filter(item => !isDirectory(lsPath === '/' ? '/' + item : lsPath + '/' + item));
+                        let output = '';
+                        dirs.forEach(dir => output += `<span style="color: var(--accent); font-weight: bold;">${dir}/</span>  `);
+                        files.forEach(file => output += `<span style="color: var(--text-primary)">${file}</span>  `);
+                        printLine(output || '<span style="color: var(--text-secondary)">(empty directory)</span>');
+                    } else {
+                        printLine(`<span class="error">ls: cannot access '${escapeHtml(argStr)}': No such directory</span>`);
+                    }
+                    break;
+
+                case 'pwd':
+                    printLine(currentPath);
+                    break;
+
+                case 'cd':
+                    if (!argStr || argStr === '~') {
+                        currentPath = '/home/visitor';
+                        updatePrompt();
+                    } else if (argStr === '..') {
+                        if (currentPath === '/') {
+                            // Already at root
+                        } else {
+                            const parts = currentPath.split('/').filter(p => p);
+                            parts.pop();
+                            currentPath = parts.length === 0 ? '/' : '/' + parts.join('/');
+                            updatePrompt();
+                        }
+                    } else if (argStr === '/') {
+                        currentPath = '/';
+                        updatePrompt();
+                    } else {
+                        const newPath = normalizePath(argStr);
+                        if (isDirectory(newPath)) {
+                            currentPath = newPath;
+                            updatePrompt();
+                        } else {
+                            printLine(`<span class="error">cd: ${escapeHtml(argStr)}: No such directory</span>`);
+                        }
+                    }
+                    break;
+
+                case 'cat':
+                    if (!argStr) {
+                        printLine(`<span class="error">cat: missing file operand</span>`);
+                    } else {
+                        if (isFile(argStr, currentPath)) {
+                            const content = getFileContent(argStr);
+                            if (content) {
+                                printLine(content.replace(/\n/g, '<br>'));
+                            } else {
+                                printLine(`<span class="error">cat: ${escapeHtml(argStr)}: Cannot read file</span>`);
+                            }
+                        } else {
+                            printLine(`<span class="error">cat: ${escapeHtml(argStr)}: No such file</span>`);
+                        }
+                    }
+                    break;
+
+                case 'tree':
+                    printLine(`<span style="color: var(--accent)">Directory Tree:</span>`);
+                    printLine(`/`);
+                    printLine(`├── home/`);
+                    printLine(`│   ├── visitor/`);
+                    printLine(`│   │   ├── README.txt`);
+                    printLine(`│   │   ├── about.txt`);
+                    printLine(`│   │   ├── projects.txt`);
+                    printLine(`│   │   ├── skills.txt`);
+                    printLine(`│   │   └── contact.txt`);
+                    printLine(`│   └── ayush/`);
+                    printLine(`│       ├── portfolio/`);
+                    printLine(`│       ├── code/`);
+                    printLine(`│       ├── music/`);
+                    printLine(`│       └── gym-stats.txt`);
+                    printLine(`├── usr/`);
+                    printLine(`│   ├── bin/`);
+                    printLine(`│   └── local/`);
+                    printLine(`├── etc/`);
+                    printLine(`│   └── config/`);
+                    printLine(`└── var/`);
+                    printLine(`    └── log/`);
+                    break;
+
+                case 'echo':
+                    printLine(sanitizeForDisplay(argStr || ''));
+                    break;
+
+                case 'man':
+                    if (!argStrLower) {
+                        printLine(`What manual page do you want?`);
+                        printLine(`Usage: man [command]`);
+                        printLine(`Try: man ls, man cd, man cat, etc.`);
+                    } else {
+                        const manPages = {
+                            ls: `<span style="color: var(--accent); font-weight: bold;">LS(1) - User Commands</span>\n\nNAME\n  ls - list directory contents\n\nSYNOPSIS\n  ls [directory]\n\nDESCRIPTION\n  List information about files and directories.\n  Directories are shown in green, files in default color.\n\nEXAMPLES\n  ls              List current directory\n  ls /home        List /home directory`,
+                            cd: `<span style="color: var(--accent); font-weight: bold;">CD(1) - User Commands</span>\n\nNAME\n  cd - change directory\n\nSYNOPSIS\n  cd [directory]\n\nDESCRIPTION\n  Change the current working directory.\n\nEXAMPLES\n  cd ~            Go to home directory\n  cd /            Go to root directory\n  cd ..           Go to parent directory\n  cd /home/visitor  Go to specific directory`,
+                            cat: `<span style="color: var(--accent); font-weight: bold;">CAT(1) - User Commands</span>\n\nNAME\n  cat - concatenate and display files\n\nSYNOPSIS\n  cat [file]\n\nDESCRIPTION\n  Display contents of text files.\n\nEXAMPLES\n  cat README.txt  Display README file`,
+                            pwd: `<span style="color: var(--accent); font-weight: bold;">PWD(1) - User Commands</span>\n\nNAME\n  pwd - print working directory\n\nSYNOPSIS\n  pwd\n\nDESCRIPTION\n  Display the current working directory path.`,
+                            help: `<span style="color: var(--accent); font-weight: bold;">HELP(1) - User Commands</span>\n\nNAME\n  help - display available commands\n\nSYNOPSIS\n  help\n\nDESCRIPTION\n  Show all available terminal commands with descriptions.`,
+                            tree: `<span style="color: var(--accent); font-weight: bold;">TREE(1) - User Commands</span>\n\nNAME\n  tree - display directory tree structure\n\nSYNOPSIS\n  tree\n\nDESCRIPTION\n  Show the entire file system hierarchy in a tree format.`,
+                            echo: `<span style="color: var(--accent); font-weight: bold;">ECHO(1) - User Commands</span>\n\nNAME\n  echo - display a line of text\n\nSYNOPSIS\n  echo [text]\n\nDESCRIPTION\n  Display the given text to the terminal.\n\nEXAMPLES\n  echo Hello World    Display "Hello World"`
+                        };
+                        
+                        const page = manPages[argStrLower];
+                        if (page) {
+                            printLine(page.replace(/\n/g, '<br>'));
+                        } else {
+                            printLine(`<span class="error">No manual entry for ${escapeHtml(argStrLower)}</span>`);
+                            printLine(`Try "man" without arguments to see available pages.`);
+                        }
+                    }
+                    break;
+
+                case 'help':
+                    printLine(commands.help);
+                    break;
+                case 'banner':
+                    printLine(commands.banner);
+                    break;
+                case 'neofetch':
+                    printLine(commands.neofetch);
+                    break;
+                case 'about':
+                case 'whoami':
+                case 'experience':
+                case 'projects':
+                case 'skills':
+                case 'hobbies':
+                case 'contact':
+                case 'email':
+                case 'github':
+                case 'linkedin':
+                case 'shopify':
+                case 'wordpress':
+                case 'ascii':
+                    printLine(typeof commands[cmd] === 'function' ? commands[cmd]() : commands[cmd]);
+                    break;
+                case 'quote':
+                case 'joke':
+                    printLine(commands[cmd]());
+                    break;
+                case 'date':
+                    printLine(new Date().toString());
+                    break;
+                case 'uptime':
+                    const uptime = Math.floor(Math.random() * 1000) + 700;
+                    printLine(`System uptime: ${uptime} days | 99.9% reliability | 0 crashes`);
+                    break;
+                case 'clear':
+                case 'cls':
+                    clearTerminal();
+                    break;
+                case 'history':
+                    if (state.history.length === 0) {
+                        printLine('(empty)');
+                    } else {
+                        state.history.forEach((h, i) => printLine(`${i + 1}  ${escapeHtml(h)}`));
+                    }
+                    break;
+                case 'theme':
+                    if (!argStrLower) {
+                        printLine(`Current theme: <span class="command">${state.theme}</span>`);
+                        printLine(`Usage: theme [matrix|ubuntu|retro]`);
+                    } else if (['matrix','ubuntu','retro'].includes(argStrLower)) {
+                        state.theme = argStrLower;
+                        setTheme(argStrLower);
+                        printLine(`Theme changed to <span class="command">${argStrLower}</span>.`);
+                    } else if (argStrLower === 'list') {
+                        printLine(`Available: matrix, ubuntu, retro`);
+                    } else {
+                        printLine(`<span class="error">Unknown theme '${escapeHtml(argStrLower)}'</span>`);
+                    }
+                    break;
+                case 'desktop':
+                    setMode('desktop');
+                    printLine(`Switched to desktop mode.`);
+                    break;
+                case 'terminal':
+                    setMode('terminal');
+                    printLine(`Switched to terminal mode.`);
+                    break;
+                case 'open':
+                    if (!argStrLower) {
+                        printLine(`Usage: open [about|experience|projects|skills|hobbies|contact]`);
+                    } else {
+                        const map = {
+                            about: 'aboutWindow',
+                            experience: 'experienceWindow',
+                            projects: 'projectsWindow',
+                            skills: 'skillsWindow',
+                            hobbies: 'hobbiesWindow',
+                            contact: 'contactWindow'
+                        };
+                        const winId = map[argStrLower];
+                        if (winId) {
+                            setMode('desktop');
+                            openWindowById(winId, true);
+                            printLine(`Opened <span class="command">${argStrLower}</span> window.`);
+                        } else {
+                            printLine(`<span class="error">Unknown window '${escapeHtml(argStrLower)}'</span>`);
+                        }
+                    }
+                    break;
+                case 'matrix':
+                    toggleMatrixOverlay();
+                    printLine(`Matrix ${state.matrixRunning ? 'enabled' : 'disabled'}.`);
+                    break;
+                case 'sudo':
+                    printLine(`<span class="error">Permission denied:</span> this is a demo shell. But nice try 😉`);
+                    break;
+                case 'exit':
+                    printLine(`<span class="success">Goodbye! Refreshing terminal...</span>`);
+                    setTimeout(() => location.reload(), 1500);
+                    break;
+                default:
+                    printLine(`<span class="error">Command not found:</span> ${escapeHtml(cmd)}. Type <span class="command">help</span>.`);
+                    break;
+            }
+        }
+
+        // Input events
+        terminalInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const value = terminalInput.value;
+                handleCommand(value);
+                terminalInput.value = '';
+                e.preventDefault();
+                return;
+            }
+            if (e.key === 'ArrowUp') {
+                if (state.historyIndex > 0) {
+                    state.historyIndex--;
+                    terminalInput.value = state.history[state.historyIndex] || '';
+                    setTimeout(() => terminalInput.setSelectionRange(terminalInput.value.length, terminalInput.value.length), 0);
+                }
+                e.preventDefault();
+            } else if (e.key === 'ArrowDown') {
+                if (state.historyIndex < state.history.length) {
+                    state.historyIndex++;
+                    terminalInput.value = state.history[state.historyIndex] || '';
+                    setTimeout(() => terminalInput.setSelectionRange(terminalInput.value.length, terminalInput.value.length), 0);
+                }
+                e.preventDefault();
+            } else if (e.key === 'PageDown') {
+                terminalMode.scrollTop = terminalMode.scrollHeight;
+                e.preventDefault();
+            } else if (e.ctrlKey && (e.key === 'l' || e.key === 'L')) {
+                clearTerminal();
+                e.preventDefault();
+            }
+        });
+
+        // Keep focus on input in terminal mode
+        document.addEventListener('keydown', () => {
+            if (state.mode === 'terminal') focusInput();
+        });
+        terminalMode.addEventListener('click', focusInput);
+        terminalInputContainer.addEventListener('click', focusInput);
+
+        // Desktop: icons -> windows
+        document.querySelectorAll('.icon').forEach(icon => {
+            icon.addEventListener('dblclick', () => {
+                const key = icon.getAttribute('data-window');
+                const id = `${key}Window`;
+                openWindowById(id, true);
+            });
+            icon.addEventListener('click', () => {
+                // Single click focus effect could be added
+            });
+        });
+
+        // Window management
+        function openWindowById(id, center = false) {
+            const win = document.getElementById(id);
+            if (!win) return;
+            win.classList.remove('closing');
+            win.classList.add('active');
+            bringToFront(win);
+
+            if (center) {
+                const { width, height } = desktopMode.getBoundingClientRect();
+                const w = Math.min(700, width * 0.8);
+                win.style.left = '50%';
+                win.style.top = '50%';
+                win.style.transform = 'translate(-50%, -50%)';
+                win.style.width = `${w}px`;
+            }
+
+            enableDrag(win);
+            const closeBtn = win.querySelector('.close-btn');
+            if (closeBtn && !closeBtn._bound) {
+                closeBtn.addEventListener('click', () => closeWindow(win));
+                closeBtn._bound = true;
+            }
+            if (!win._clickBound) {
+                win.addEventListener('mousedown', () => bringToFront(win));
+                win._clickBound = true;
+            }
+        }
+
+        function closeWindow(win) {
+            win.classList.add('closing');
+            win.addEventListener('animationend', function handler() {
+                win.classList.remove('active', 'closing');
+                win.removeEventListener('animationend', handler);
+            });
+        }
+
+        function bringToFront(win) {
+            state.zTop += 1;
+            win.style.zIndex = state.zTop;
+        }
+
+        function enableDrag(win) {
+            const header = win.querySelector('.window-header');
+            if (!header || header._dragBound) return;
+
+            let offsetX = 0, offsetY = 0, dragging = false;
+
+            const onMouseDown = (e) => {
+                dragging = true;
+                bringToFront(win);
+                const rect = win.getBoundingClientRect();
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            };
+
+            const onMouseMove = (e) => {
+                if (!dragging) return;
+                const deskRect = desktopMode.getBoundingClientRect();
+                let left = e.clientX - offsetX - deskRect.left;
+                let top = e.clientY - offsetY - deskRect.top;
+                const maxLeft = deskRect.width - 100;
+                const maxTop = deskRect.height - 40;
+                left = Math.max(0, Math.min(left, maxLeft));
+                top = Math.max(0, Math.min(top, maxTop));
+                win.style.left = `${left}px`;
+                win.style.top = `${top}px`;
+                win.style.transform = 'none';
+            };
+
+            const onMouseUp = () => {
+                dragging = false;
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            };
+
+            header.addEventListener('mousedown', onMouseDown);
+            header._dragBound = true;
+        }
+
+        // Matrix overlay (desktop + command)
+        let matrixAnimId = null;
+        function resizeMatrix() {
+            matrixCanvas.width = desktopMode.clientWidth;
+            matrixCanvas.height = desktopMode.clientHeight;
+        }
+        window.addEventListener('resize', resizeMatrix);
+        resizeMatrix();
+
+        function startMatrix() {
+            if (matrixAnimId) return;
+            matrixCanvas.classList.add('active');
+            const letters = 'アカサタナハマヤラワ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const fontSize = 14;
+            const columns = Math.floor(matrixCanvas.width / fontSize);
+            const drops = Array(columns).fill(1);
+
+            function draw() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                ctx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+                ctx.fillStyle = '#0f0';
+                ctx.font = `${fontSize}px monospace`;
+                for (let i = 0; i < drops.length; i++) {
+                    const text = letters.charAt(Math.floor(Math.random() * letters.length));
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                    if (drops[i] * fontSize > matrixCanvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+                matrixAnimId = requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        function stopMatrix() {
+            if (matrixAnimId) {
+                cancelAnimationFrame(matrixAnimId);
+                matrixAnimId = null;
+            }
+            ctx.clearRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+            matrixCanvas.classList.remove('active');
+        }
+
+        function toggleMatrixOverlay() {
+            state.matrixRunning = !state.matrixRunning;
+            if (state.mode === 'desktop') {
+                if (state.matrixRunning) startMatrix(); else stopMatrix();
+            } else {
+                // In terminal mode, briefly show a text effect
+                printLine(`<span class="command">Wake up, Neo...</span>`);
+                setTimeout(() => printLine(`<span class="command">The Matrix has you.</span>`), 700);
+            }
+        }
+
+        // Ensure matrix state sync on mode change
+        const prevSetMode = setMode;
+        setMode = function(mode) {
+            prevSetMode(mode);
+            if (mode === 'desktop') {
+                resizeMatrix();
+                if (state.matrixRunning) startMatrix(); else stopMatrix();
+            } else {
+                stopMatrix();
+            }
+        }.bind(this);
+
+        // Default focus
+        focusInput();
+
+        // Kickoff: print help hint
+        printLine(`<span class="success">✓ System Ready</span>`);
+        printLine(``);
+        printLine(`<span class="warning">Quick Start:</span>`);
+        printLine(`  • Type <span class="command">help</span> to see all commands`);
+        printLine(`  • Try <span class="command">ls</span> to list files, <span class="command">cat README.txt</span> to read files`);
+        printLine(`  • Use <span class="command">cd</span>, <span class="command">pwd</span>, <span class="command">tree</span> for navigation`);
+        printLine(`  • Type <span class="command">about</span> or <span class="command">neofetch</span> to learn about me`);
+        printLine(`  • Try <span class="command">desktop</span> to switch to GUI mode`);
+        printLine(``);
+
+        // Accessibility: prevent stray caret elsewhere
+        document.addEventListener('mousedown', (e) => {
+            if (state.mode === 'terminal' && !terminalInput.contains(e.target)) {
+                focusInput();
+            }
+        });
+    </script>
+</body>
+</html>
