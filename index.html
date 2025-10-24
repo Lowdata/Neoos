@@ -221,12 +221,16 @@
         .icon {
             text-align: center;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: all 0.2s ease;
             user-select: none;
         }
 
         .icon:hover {
-            transform: scale(1.1);
+            transform: scale(1.1) translateY(-2px);
+        }
+
+        .icon:active {
+            transform: scale(1.05) translateY(0);
         }
 
         .icon-image {
@@ -294,11 +298,11 @@
         @keyframes windowClose {
             from {
                 opacity: 1;
-                transform: scale(1) translate(-50%, -50%);
+                transform: scale(1);
             }
             to {
                 opacity: 0;
-                transform: scale(0.8) translate(-50%, -50%);
+                transform: scale(0.8);
             }
         }
 
@@ -1630,15 +1634,12 @@ LinkedIn: <a href="https://linkedin.com/in/ayush-pahuja-b4455b17b" target="_blan
         terminalMode.addEventListener('click', focusInput);
         terminalInputContainer.addEventListener('click', focusInput);
 
-        // Desktop: icons -> windows
+        // Desktop: icons -> windows (single click to open)
         document.querySelectorAll('.icon').forEach(icon => {
-            icon.addEventListener('dblclick', () => {
+            icon.addEventListener('click', () => {
                 const key = icon.getAttribute('data-window');
                 const id = `${key}Window`;
                 openWindowById(id, true);
-            });
-            icon.addEventListener('click', () => {
-                // Single click focus effect could be added
             });
         });
 
