@@ -87,7 +87,7 @@ h1.hero-title em{font-style:italic;color:var(--clay);font-weight:500;}
 .principle{font-family:var(--mono);font-size:10.5px;letter-spacing:0.04em;color:var(--ink-faint);border:1px solid var(--line);padding:6px 12px;border-radius:999px;}
 .principle b{color:var(--sage);font-weight:600;}
 
-/* ===== projects (Orion) — moved up, primary zone ===== */
+/* ===== projects (Orion) ===== */
 .proj-grid{display:flex;flex-direction:column;gap:12px;}
 .proj{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:22px 24px;display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;transition:border-color .2s,transform .2s;}
 .proj:hover{border-color:var(--star);transform:translateY(-1px);}
@@ -262,6 +262,32 @@ footer{padding:24px 0 40px;text-align:center;font-family:var(--mono);font-size:1
         </div>
         <div class="proj-links">
           <a class="proj-link primary" href="https://saddlebrown-bat-685673.hostingersite.com/" target="_blank" rel="noopener">Live ↗</a>
+        </div>
+      </div>
+
+      <div class="proj featured">
+        <div>
+          <div class="proj-head"><span class="status-pill live"><span class="dot"></span>live</span></div>
+          <div class="proj-title">LocalRAG</div>
+          <p class="proj-desc">Offline RAG backend featuring metadata filtering, grounded responses, retrieval evaluation, and LLM-as-a-Judge integration.</p>
+          <div class="proj-stack"><span class="chip">LanceDB</span><span class="chip">FastAPI</span><span class="chip">Ollama</span><span class="chip">SentenceTransformers</span></div>
+        </div>
+        <div class="proj-links">
+          <a class="proj-link primary" href="https://www.loom.com/share/35e1b27a3a2c470e8f2526639a31e53e" target="_blank" rel="noopener">Demo Walkthrough ↗</a>
+          <a class="proj-link" href="https://github.com/Lowdata/LocalRAG" target="_blank" rel="noopener">Source ↗</a>
+        </div>
+      </div>
+
+      <div class="proj featured">
+        <div>
+          <div class="proj-head"><span class="status-pill live"><span class="dot"></span>live</span></div>
+          <div class="proj-title">Redrob AI Employee Ranker</div>
+          <p class="proj-desc">Generates a ranked CSV of the best 100 candidates from a massive pool of 100,000. Built for the Redrob Hackathon to evaluate profiles against an Applied ML matching rubric.</p>
+          <div class="proj-stack"><span class="chip">Applied ML</span><span class="chip">HuggingFace</span><span class="chip">Python</span></div>
+        </div>
+        <div class="proj-links">
+          <a class="proj-link primary" href="https://huggingface.co/spaces/ayushpahuja/redrob-candidate-ranker" target="_blank" rel="noopener">Live Space ↗</a>
+          <a class="proj-link" href="https://github.com/Lowdata/redrob-candidate-ranker" target="_blank" rel="noopener">Source ↗</a>
         </div>
       </div>
 
